@@ -2,18 +2,18 @@ import React from 'react';
 import type { CustomizationState } from '../../App';
 
 interface ColorSchemeStepProps {
-  customization: CustomizationState;
-  updateCustomization: (field: keyof CustomizationState, value: any) => void;
+  value: CustomizationState['colorScheme'];
+  onChange: (value: CustomizationState['colorScheme']) => void;
 }
 
 const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
-  customization,
-  updateCustomization,
+  value,
+  onChange,
 }) => {
-  const handleColorChange = (colorType: keyof CustomizationState['colorScheme'], value: string) => {
-    updateCustomization('colorScheme', {
-      ...customization.colorScheme,
-      [colorType]: value,
+  const handleColorChange = (colorType: keyof CustomizationState['colorScheme'], colorValue: string) => {
+    onChange({
+      ...value,
+      [colorType]: colorValue,
     });
   };
 
@@ -27,7 +27,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
       </div>
 
       <div className="space-y-4">
-        {Object.entries(customization.colorScheme).map(([colorType, value]) => (
+        {Object.entries(value).map(([colorType, colorValue]) => (
           <div key={colorType}>
             <label
               htmlFor={colorType}
@@ -39,7 +39,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
               <input
                 type="color"
                 id={colorType}
-                value={value}
+                value={colorValue}
                 onChange={(e) =>
                   handleColorChange(
                     colorType as keyof CustomizationState['colorScheme'],
@@ -50,7 +50,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
               />
               <input
                 type="text"
-                value={value}
+                value={colorValue}
                 onChange={(e) =>
                   handleColorChange(
                     colorType as keyof CustomizationState['colorScheme'],
@@ -68,7 +68,7 @@ const ColorSchemeStep: React.FC<ColorSchemeStepProps> = ({
       <div className="mt-6">
         <h3 className="text-sm font-medium text-gray-900">Preview</h3>
         <div className="mt-2 grid grid-cols-3 gap-4">
-          {Object.entries(customization.colorScheme).map(([name, color]) => (
+          {Object.entries(value).map(([name, color]) => (
             <div
               key={name}
               className="relative rounded-lg p-4 flex items-center justify-center"

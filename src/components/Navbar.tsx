@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './auth/MockAuthContext';
 
 const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Determinar si un enlace está activo
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  // Manejar cierre de sesión
+  const handleSignOut = () => {
+    signOut();
+    navigate('/login');
   };
 
   return (
@@ -43,6 +50,16 @@ const Navbar: React.FC = () => {
               >
                 Sobre Nosotros
               </Link>
+              <Link
+                to="/client-info"
+                className={`${
+                  isActive('/client-info') 
+                    ? 'border-blue-500 text-gray-900' 
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              >
+                Info Cliente
+              </Link>
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -58,7 +75,7 @@ const Navbar: React.FC = () => {
                   <span>{user?.username || 'Usuario'}</span>
                 </Link>
                 <button
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
                   className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cerrar sesión
@@ -134,6 +151,17 @@ const Navbar: React.FC = () => {
           >
             Sobre Nosotros
           </Link>
+          <Link
+            to="/client-info"
+            className={`${
+              isActive('/client-info') 
+                ? 'bg-blue-50 border-blue-500 text-blue-700' 
+                : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+            } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Info Cliente
+          </Link>
         </div>
         <div className="pt-4 pb-3 border-t border-gray-200">
           <div className="flex items-center px-4">
@@ -157,7 +185,7 @@ const Navbar: React.FC = () => {
             </Link>
             <button
               onClick={() => {
-                signOut();
+                handleSignOut();
                 setMobileMenuOpen(false);
               }}
               className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"

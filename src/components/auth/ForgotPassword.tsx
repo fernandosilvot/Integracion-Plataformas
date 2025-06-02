@@ -7,10 +7,10 @@ const ForgotPassword: React.FC = () => {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const { forgotPassword, forgotPasswordSubmit } = useAuth();
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -21,34 +21,44 @@ const ForgotPassword: React.FC = () => {
     try {
       await forgotPassword(username);
       setCodeSent(true);
+      setSuccess('Código de verificación enviado. Por favor revisa tu correo electrónico.');
     } catch (err: any) {
-      setError(err.message || 'Error al enviar el código');
+      setError(err.message || 'Error al enviar el código de verificación');
+      console.error('Error al enviar código:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitNewPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+    setSuccess('');
+
+    // Validar que las contraseñas coincidan
     if (newPassword !== confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
     }
-    
+
+    // Validar que la contraseña tenga al menos 8 caracteres
     if (newPassword.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
-    
+
     setLoading(true);
 
     try {
       await forgotPasswordSubmit(username, code, newPassword);
-      setSuccess(true);
+      setSuccess('Contraseña restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.');
+      // Limpiar los campos
+      setCode('');
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (err: any) {
-      setError(err.message || 'Error al cambiar la contraseña');
+      setError(err.message || 'Error al restablecer la contraseña');
+      console.error('Error al restablecer contraseña:', err);
     } finally {
       setLoading(false);
     }
@@ -62,56 +72,46 @@ const ForgotPassword: React.FC = () => {
             Recuperar contraseña
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {!codeSent 
-              ? 'Ingresa tu email para recibir un código de verificación' 
-              : 'Ingresa el código de verificación y tu nueva contraseña'}
+            {codeSent
+              ? 'Ingresa el código de verificación y tu nueva contraseña'
+              : 'Ingresa tu correo electrónico para recibir un código de verificación'}
           </p>
         </div>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-        
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">
-              ¡Contraseña actualizada correctamente!
-              <br />
-              <Link to="/login" className="font-medium underline">
-                Ir al inicio de sesión
-              </Link>
-            </span>
-          </div>
-        )}
-        
+
         {!codeSent ? (
           <form className="mt-8 space-y-6" onSubmit={handleSendCode}>
-            <div className="rounded-md shadow-sm">
-              <div>
-                <label htmlFor="username" className="sr-only">Email</label>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <div className="mt-1">
                 <input
                   id="username"
                   name="username"
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="tu@email.com"
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+
+            {success && (
+              <div className="text-green-500 text-sm text-center">{success}</div>
+            )}
 
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
               >
                 {loading ? (
                   <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -121,63 +121,81 @@ const ForgotPassword: React.FC = () => {
                     </svg>
                   </span>
                 ) : null}
-                {loading ? 'Enviando código...' : 'Enviar código de verificación'}
+                Enviar código
               </button>
             </div>
           </form>
-        ) : !success ? (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmitNewPassword}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="code" className="sr-only">Código de verificación</label>
+        ) : (
+          <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
+            <div>
+              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+                Código de verificación
+              </label>
+              <div className="mt-1">
                 <input
                   id="code"
                   name="code"
                   type="text"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Código de verificación"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Ingresa el código"
                 />
               </div>
-              <div>
-                <label htmlFor="new-password" className="sr-only">Nueva contraseña</label>
+            </div>
+
+            <div>
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+                Nueva contraseña
+              </label>
+              <div className="mt-1">
                 <input
                   id="new-password"
                   name="new-password"
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Nueva contraseña"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Nueva contraseña"
                 />
               </div>
-              <div>
-                <label htmlFor="confirm-password" className="sr-only">Confirmar contraseña</label>
+            </div>
+
+            <div>
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+                Confirmar contraseña
+              </label>
+              <div className="mt-1">
                 <input
                   id="confirm-password"
                   name="confirm-password"
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirmar contraseña"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Confirmar contraseña"
                 />
               </div>
             </div>
 
-            <div>
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+
+            {success && (
+              <div className="text-green-500 text-sm text-center">{success}</div>
+            )}
+
+            <div className="flex flex-col space-y-4">
               <button
                 type="submit"
                 disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
               >
                 {loading ? (
                   <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -187,26 +205,30 @@ const ForgotPassword: React.FC = () => {
                     </svg>
                   </span>
                 ) : null}
-                {loading ? 'Cambiando contraseña...' : 'Cambiar contraseña'}
+                Restablecer contraseña
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCodeSent(false)}
+                className="text-sm text-indigo-600 hover:text-indigo-500"
+              >
+                Volver a enviar código
               </button>
             </div>
           </form>
-        ) : null}
+        )}
+
+        <div className="text-center mt-4">
+          <Link to="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+            Volver a iniciar sesión
+          </Link>
+        </div>
         
-        <div className="text-center">
+        <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Volver al inicio de sesión
-            </Link>
+            Para desarrollo local, puedes usar cualquier código (por ejemplo: 123456)
           </p>
-          
-          {codeSent && !success && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-md">
-              <p className="text-sm text-gray-700">
-                Para desarrollo local, cualquier código será aceptado.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

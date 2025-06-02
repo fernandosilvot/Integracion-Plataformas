@@ -1,12 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Project } from '../services/MockProjectService';
+import { useNavigate } from 'react-router-dom';
+import { Project, deleteProject } from '../services/MockProjectService';
 
 interface ProjectCardProps {
   project: Project;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+  const navigate = useNavigate();
+  
   // Formatear la fecha para mostrarla de manera legible
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -15,6 +17,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Función para editar el proyecto
+  const handleEdit = () => {
+    navigate(`/edit-project/${project.id}`);
+  };
+
+  // Función para ver la vista previa del proyecto
+  const handlePreview = () => {
+    navigate(`/preview-project/${project.id}`);
+  };
+
+  // Función para eliminar el proyecto
+  const handleDelete = async () => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar el proyecto "${project.name}"?`)) {
+      try {
+        await deleteProject(project.id);
+        // Recargar la página para reflejar los cambios
+        window.location.reload();
+      } catch (error) {
+        console.error('Error al eliminar el proyecto:', error);
+        alert('No se pudo eliminar el proyecto. Por favor, inténtalo de nuevo.');
+      }
+    }
   };
 
   return (
@@ -54,24 +80,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </div>
       </div>
       <div className="bg-gray-50 px-5 py-3 flex justify-between">
-        <Link
-          to={`/edit-project/${project.id}`}
+        <button
+          onClick={handleEdit}
           className="text-sm font-medium text-blue-600 hover:text-blue-500"
         >
           Editar
-        </Link>
-        <Link
-          to={`/preview-project/${project.id}`}
+        </button>
+        <button
+          onClick={handlePreview}
           className="text-sm font-medium text-green-600 hover:text-green-500"
         >
           Vista previa
-        </Link>
+        </button>
         <button
           className="text-sm font-medium text-red-600 hover:text-red-500"
-          onClick={() => {
-            // Aquí iría la lógica para eliminar el proyecto
-            alert(`Eliminar proyecto: ${project.id}`);
-          }}
+          onClick={handleDelete}
         >
           Eliminar
         </button>

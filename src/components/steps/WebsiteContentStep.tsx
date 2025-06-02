@@ -1,195 +1,262 @@
-import React, { useCallback } from 'react';
+import React, { useState } from 'react';
+import type { CustomizationState } from '../../App';
+import { v4 as uuidv4 } from 'uuid';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import type { CustomizationState } from '../../App';
 
 interface WebsiteContentStepProps {
-  customization: CustomizationState;
-  updateCustomization: (field: keyof CustomizationState, value: any) => void;
+  value: CustomizationState['websiteContent'];
+  onChange: (value: CustomizationState['websiteContent']) => void;
 }
 
 const WebsiteContentStep: React.FC<WebsiteContentStepProps> = ({
-  customization,
-  updateCustomization,
+  value,
+  onChange,
 }) => {
-  const handleContentChange = useCallback(
-    (field: keyof CustomizationState['websiteContent'], value: any) => {
-      updateCustomization('websiteContent', {
-        ...customization.websiteContent,
-        [field]: value,
-      });
-    },
-    [customization.websiteContent, updateCustomization]
-  );
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const handleSectionChange = useCallback(
-    (sectionId: string, field: string, value: string) => {
-      const updatedSections = customization.websiteContent.sections.map((section) =>
-        section.id === sectionId ? { ...section, [field]: value } : section
-      );
-      updateCustomization('websiteContent', {
-        ...customization.websiteContent,
-        sections: updatedSections,
-      });
-    },
-    [customization.websiteContent, updateCustomization]
-  );
-
-  const addNewSection = useCallback(() => {
-    const newSection = {
-      id: Date.now().toString(),
-      title: 'New Section',
-      content: 'Add your content here...',
-      image: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80'
-    };
-    updateCustomization('websiteContent', {
-      ...customization.websiteContent,
-      sections: [...customization.websiteContent.sections, newSection],
+  const handleBasicInfoChange = (field: keyof Omit<CustomizationState['websiteContent'], 'sections'>, fieldValue: string) => {
+    onChange({
+      ...value,
+      [field]: fieldValue,
     });
-  }, [customization.websiteContent, updateCustomization]);
+  };
 
-  const removeSection = useCallback(
-    (sectionId: string) => {
-      const updatedSections = customization.websiteContent.sections.filter(
-        (section) => section.id !== sectionId
-      );
-      updateCustomization('websiteContent', {
-        ...customization.websiteContent,
-        sections: updatedSections,
-      });
-    },
-    [customization.websiteContent, updateCustomization]
-  );
+  const handleSectionChange = (sectionId: string, field: keyof CustomizationState['websiteContent']['sections'][0], fieldValue: string) => {
+    const updatedSections = value.sections.map((section) => {
+      if (section.id === sectionId) {
+        return {
+          ...section,
+          [field]: fieldValue,
+        };
+      }
+      return section;
+    });
+
+    onChange({
+      ...value,
+      sections: updatedSections,
+    });
+  };
+
+  const addSection = () => {
+    const newSection = {
+      id: uuidv4(),
+      title: 'Nueva Sección',
+      content: '<p>Contenido de la nueva sección.</p>',
+    };
+
+    onChange({
+      ...value,
+      sections: [...value.sections, newSection],
+    });
+
+    // Activar la nueva sección automáticamente
+    setActiveSection(newSection.id);
+  };
+
+  const removeSection = (sectionId: string) => {
+    const updatedSections = value.sections.filter(
+      (section) => section.id !== sectionId
+    );
+
+    onChange({
+      ...value,
+      sections: updatedSections,
+    });
+
+    // Si se elimina la sección activa, desactivar
+    if (activeSection === sectionId) {
+      setActiveSection(null);
+    }
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium text-gray-900">Contenido de la Web</h2>
+        <h2 className="text-lg font-medium text-gray-900">Contenido del Sitio Web</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Personalice el contenido de su sitio web agregando secciones y configurando el pie de
-          página.
+          Personalice el contenido principal de su sitio web, incluyendo títulos, imágenes y
+          secciones.
         </p>
       </div>
 
-      {/* Header Content */}
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Titulo de la Web
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            Título del Sitio
           </label>
           <input
             type="text"
-            value={customization.websiteContent.title}
-            onChange={(e) => handleContentChange('title', e.target.value)}
+            id="title"
+            value={value.title}
+            onChange={(e) => handleBasicInfoChange('title', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Subtitulo de la Web
+          <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700">
+            Subtítulo
           </label>
           <input
             type="text"
-            value={customization.websiteContent.subtitle}
-            onChange={(e) => handleContentChange('subtitle', e.target.value)}
+            id="subtitle"
+            value={value.subtitle}
+            onChange={(e) => handleBasicInfoChange('subtitle', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Imagen de Hero
+          <label htmlFor="heroImage" className="block text-sm font-medium text-gray-700">
+            Imagen Principal (URL)
           </label>
           <input
             type="text"
-            value={customization.websiteContent.heroImage}
-            onChange={(e) => handleContentChange('heroImage', e.target.value)}
+            id="heroImage"
+            value={value.heroImage}
+            onChange={(e) => handleBasicInfoChange('heroImage', e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+          {value.heroImage && (
+            <div className="mt-2">
+              <img
+                src={value.heroImage}
+                alt="Hero Preview"
+                className="h-32 w-full object-cover rounded-md"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="footerText" className="block text-sm font-medium text-gray-700">
+            Texto del Pie de Página
+          </label>
+          <input
+            type="text"
+            id="footerText"
+            value={value.footerText}
+            onChange={(e) => handleBasicInfoChange('footerText', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
       </div>
 
-      {/* Content Sections */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium text-gray-900">Contenido de la web</h3>
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-medium text-gray-900">Secciones de Contenido</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Añada y edite las secciones de contenido de su sitio web.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          {value.sections.map((section) => (
+            <div
+              key={section.id}
+              className="border border-gray-200 rounded-md overflow-hidden"
+            >
+              <div
+                className="bg-gray-50 px-4 py-3 flex justify-between items-center cursor-pointer"
+                onClick={() =>
+                  setActiveSection(activeSection === section.id ? null : section.id)
+                }
+              >
+                <h4 className="text-sm font-medium text-gray-900">{section.title}</h4>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeSection(section.id);
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    Eliminar
+                  </button>
+                  <span className="text-gray-500">
+                    {activeSection === section.id ? '▼' : '▶'}
+                  </span>
+                </div>
+              </div>
+
+              {activeSection === section.id && (
+                <div className="p-4 space-y-4">
+                  <div>
+                    <label
+                      htmlFor={`section-title-${section.id}`}
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Título de la Sección
+                    </label>
+                    <input
+                      type="text"
+                      id={`section-title-${section.id}`}
+                      value={section.title}
+                      onChange={(e) =>
+                        handleSectionChange(section.id, 'title', e.target.value)
+                      }
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor={`section-content-${section.id}`}
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Contenido
+                    </label>
+                    <div className="mt-1">
+                      <ReactQuill
+                        value={section.content}
+                        onChange={(content) =>
+                          handleSectionChange(section.id, 'content', content)
+                        }
+                        className="bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor={`section-image-${section.id}`}
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Imagen de la Sección (URL)
+                    </label>
+                    <input
+                      type="text"
+                      id={`section-image-${section.id}`}
+                      value={section.image || ''}
+                      onChange={(e) =>
+                        handleSectionChange(section.id, 'image', e.target.value)
+                      }
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                    {section.image && (
+                      <div className="mt-2">
+                        <img
+                          src={section.image}
+                          alt={`Section ${section.title} Preview`}
+                          className="h-32 w-full object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
           <button
-            onClick={addNewSection}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            type="button"
+            onClick={addSection}
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            Add Section
+            + Añadir Sección
           </button>
         </div>
-
-        {customization.websiteContent.sections.map((section) => (
-          <div key={section.id} className="border rounded-lg p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <h4 className="text-md font-medium text-gray-900">Section</h4>
-              <button
-                onClick={() => removeSection(section.id)}
-                className="text-red-600 hover:text-red-800"
-              >
-                Remove
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Titulo de la Seccion
-              </label>
-              <input
-                type="text"
-                value={section.title}
-                onChange={(e) =>
-                  handleSectionChange(section.id, 'title', e.target.value)
-                }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Imagen de la Seccion
-              </label>
-              <input
-                type="text"
-                value={section.image}
-                onChange={(e) =>
-                  handleSectionChange(section.id, 'image', e.target.value)
-                }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contenido de la Seccion
-              </label>
-              <ReactQuill
-                theme="snow"
-                value={section.content}
-                onChange={(content) =>
-                  handleSectionChange(section.id, 'content', content)
-                }
-                className="bg-white"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Footer Content */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Texto del Pie de Pagina
-        </label>
-        <input
-          type="text"
-          value={customization.websiteContent.footerText}
-          onChange={(e) => handleContentChange('footerText', e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
       </div>
     </div>
   );

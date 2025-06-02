@@ -2,21 +2,21 @@ import React from 'react';
 import type { CustomizationState } from '../../App';
 
 interface LayoutStepProps {
-  customization: CustomizationState;
-  updateCustomization: (field: keyof CustomizationState, value: any) => void;
+  value: CustomizationState['layout'];
+  onChange: (value: CustomizationState['layout']) => void;
 }
 
 const LayoutStep: React.FC<LayoutStepProps> = ({
-  customization,
-  updateCustomization,
+  value,
+  onChange,
 }) => {
   const handleLayoutChange = (
     property: keyof CustomizationState['layout'],
-    value: string
+    propertyValue: string
   ) => {
-    updateCustomization('layout', {
-      ...customization.layout,
-      [property]: value,
+    onChange({
+      ...value,
+      [property]: propertyValue,
     });
   };
 
@@ -41,7 +41,7 @@ const LayoutStep: React.FC<LayoutStepProps> = ({
                 key={type}
                 onClick={() => handleLayoutChange('type', type)}
                 className={`border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium capitalize ${
-                  customization.layout.type === type
+                  value.type === type
                     ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                     : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                 }`}
@@ -62,7 +62,7 @@ const LayoutStep: React.FC<LayoutStepProps> = ({
                 key={nav}
                 onClick={() => handleLayoutChange('navigation', nav)}
                 className={`border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium capitalize ${
-                  customization.layout.navigation === nav
+                  value.navigation === nav
                     ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                     : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                 }`}
@@ -83,7 +83,7 @@ const LayoutStep: React.FC<LayoutStepProps> = ({
                 key={width}
                 onClick={() => handleLayoutChange('width', width)}
                 className={`border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium capitalize ${
-                  customization.layout.width === width
+                  value.width === width
                     ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                     : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                 }`}

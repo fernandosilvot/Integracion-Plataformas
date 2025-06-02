@@ -9,21 +9,21 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Mostrar un indicador de carga mientras se verifica la autenticación
   if (loading) {
+    // Mostrar un indicador de carga mientras se verifica la autenticación
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
       </div>
     );
   }
 
-  // Redirigir a login si no está autenticado
+  // Si no está autenticado, redirigir a la página de login
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
-  // Renderizar los hijos si está autenticado
+  // Si está autenticado, mostrar el contenido protegido
   return <>{children}</>;
 };
 

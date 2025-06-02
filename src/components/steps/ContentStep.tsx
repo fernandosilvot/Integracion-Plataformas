@@ -2,21 +2,21 @@ import React from 'react';
 import type { CustomizationState } from '../../App';
 
 interface ContentStepProps {
-  customization: CustomizationState;
-  updateCustomization: (field: keyof CustomizationState, value: any) => void;
+  value: CustomizationState['content'];
+  onChange: (value: CustomizationState['content']) => void;
 }
 
 const ContentStep: React.FC<ContentStepProps> = ({
-  customization,
-  updateCustomization,
+  value,
+  onChange,
 }) => {
   const handleContentChange = (
     property: keyof CustomizationState['content'],
-    value: string
+    propertyValue: string
   ) => {
-    updateCustomization('content', {
-      ...customization.content,
-      [property]: value,
+    onChange({
+      ...value,
+      [property]: propertyValue,
     });
   };
 
@@ -41,7 +41,7 @@ const ContentStep: React.FC<ContentStepProps> = ({
                 key={style}
                 onClick={() => handleContentChange('headerStyle', style)}
                 className={`border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium capitalize ${
-                  customization.content.headerStyle === style
+                  value.headerStyle === style
                     ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                     : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                 }`}
@@ -62,7 +62,7 @@ const ContentStep: React.FC<ContentStepProps> = ({
                 key={spacing}
                 onClick={() => handleContentChange('spacing', spacing)}
                 className={`border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium capitalize ${
-                  customization.content.spacing === spacing
+                  value.spacing === spacing
                     ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
                     : 'border-gray-300 text-gray-900 hover:bg-gray-50'
                 }`}
@@ -78,7 +78,7 @@ const ContentStep: React.FC<ContentStepProps> = ({
         <h3 className="text-sm font-medium text-gray-900">Preview</h3>
         <div
           className={`mt-3 bg-white rounded-md p-4 ${
-            customization.content.headerStyle === 'centered'
+            value.headerStyle === 'centered'
               ? 'text-center'
               : 'text-left'
           }`}
@@ -86,9 +86,9 @@ const ContentStep: React.FC<ContentStepProps> = ({
           <h4 className="text-lg font-semibold">Sample Header</h4>
           <div
             className={`mt-2 space-y-2 ${
-              customization.content.spacing === 'compact'
+              value.spacing === 'compact'
                 ? 'space-y-2'
-                : customization.content.spacing === 'comfortable'
+                : value.spacing === 'comfortable'
                 ? 'space-y-4'
                 : 'space-y-6'
             }`}
