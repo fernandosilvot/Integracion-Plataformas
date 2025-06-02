@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <img 
-                src="https://via.placeholder.com/40x40?text=LP" 
+                src="https://t3.ftcdn.net/jpg/02/98/94/38/360_F_298943877_A4W7tVyZPCu6gNGuGXJUerZbXsWmblLb.jpg" 
                 alt="La PiriApp Logo" 
                 className="h-10 w-10 rounded-full mr-3"
               />

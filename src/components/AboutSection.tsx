@@ -111,11 +111,11 @@ const AboutSection: React.FC = () => {
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
-                alt="Ana Martínez" 
+                alt="Victoria Roa" 
                 className="h-full w-full object-cover"
               />
             </div>
-            <h4 className="text-lg font-medium text-gray-900">Ana Martínez</h4>
+            <h4 className="text-lg font-medium text-gray-900">Victoria Roa</h4>
             <p className="text-indigo-600">Diseñadora UX/UI</p>
             <p className="mt-2 text-gray-500">
               Creando experiencias de usuario intuitivas y atractivas.
@@ -126,11 +126,41 @@ const AboutSection: React.FC = () => {
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
                 src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
-                alt="Carlos Rodríguez" 
+                alt="Eduardo Guzman" 
                 className="h-full w-full object-cover"
               />
             </div>
-            <h4 className="text-lg font-medium text-gray-900">Carlos Rodríguez</h4>
+            <h4 className="text-lg font-medium text-gray-900">Eduardo Guzman</h4>
+            <p className="text-indigo-600">Desarrollador Full Stack</p>
+            <p className="mt-2 text-gray-500">
+              Construyendo la tecnología que impulsa nuestras herramientas.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
+              <img 
+                src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                alt="Carlos Peña" 
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <h4 className="text-lg font-medium text-gray-900">Carlos Peña</h4>
+            <p className="text-indigo-600">Desarrollador Full Stack</p>
+            <p className="mt-2 text-gray-500">
+              Construyendo la tecnología que impulsa nuestras herramientas.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
+              <img 
+                src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                alt="Rodrigo Mujica" 
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <h4 className="text-lg font-medium text-gray-900">Rodrigo Mujica</h4>
             <p className="text-indigo-600">Desarrollador Full Stack</p>
             <p className="mt-2 text-gray-500">
               Construyendo la tecnología que impulsa nuestras herramientas.
