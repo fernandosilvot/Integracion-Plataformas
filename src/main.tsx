@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import App from './App';
 import './index.css';
-// Eliminamos la importación de AWS config
 
 // Componentes de autenticación - Usamos la versión mock para desarrollo local
 import { AuthProvider, useAuth } from './components/auth/MockAuthContext';
@@ -13,6 +11,11 @@ import ConfirmSignUp from './components/auth/ConfirmSignUp';
 import ForgotPassword from './components/auth/ForgotPassword';
 import UserProfile from './components/auth/UserProfile';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Componentes de la aplicación
+import Dashboard from './components/Dashboard';
+import ProjectEditor from './components/ProjectEditor';
+import ProjectViewer from './components/ProjectViewer';
 
 // Componente para rutas protegidas
 const AppRoutes = () => {
@@ -26,10 +29,34 @@ const AppRoutes = () => {
       
       {/* Rutas protegidas */}
       <Route 
-        path="/" 
+        path="/dashboard" 
         element={
           <ProtectedRoute>
-            <App />
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/create-project" 
+        element={
+          <ProtectedRoute>
+            <ProjectEditor mode="create" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/edit-project/:projectId" 
+        element={
+          <ProtectedRoute>
+            <ProjectEditor mode="edit" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/view-project/:projectId" 
+        element={
+          <ProtectedRoute>
+            <ProjectViewer />
           </ProtectedRoute>
         } 
       />
@@ -42,8 +69,9 @@ const AppRoutes = () => {
         } 
       />
       
-      {/* Ruta por defecto - redirige a login */}
-      <Route path="*" element={<Navigate to="/login" />} />
+      {/* Ruta por defecto - redirige a dashboard si está autenticado, o a login si no */}
+      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
 };
