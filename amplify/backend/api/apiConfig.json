@@ -1,0 +1,32 @@
+{
+  "resourceName": "projectsApi",
+  "apiName": "projectsApi",
+  "service": "API Gateway",
+  "paths": {
+    "/projects": {
+      "name": "/projects",
+      "lambdaFunction": "projectsFunction",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/projects/{id}": {
+      "name": "/projects/{id}",
+      "lambdaFunction": "projectsFunction",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}

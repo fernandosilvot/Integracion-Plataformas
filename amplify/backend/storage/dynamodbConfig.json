@@ -1,0 +1,17 @@
+{
+  "resourceName": "piriappprojects",
+  "tableName": "piriapp-projects",
+  "partitionKeyName": "id",
+  "partitionKeyType": "S",
+  "sortKeyName": "userId",
+  "sortKeyType": "S",
+  "gsi": [
+    {
+      "name": "UserProjects",
+      "partitionKey": "userId",
+      "sortKey": "createdAt",
+      "projectionType": "ALL"
+    }
+  ],
+  "triggerFunctions": []
+}
