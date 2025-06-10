@@ -1,9 +1,18 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { Auth } from 'aws-amplify';
+import { signIn, signOut, signUp, confirmSignUp, resetPassword, confirmResetPassword, getCurrentUser, fetchUserAttributes, updateUserAttributes } from 'aws-amplify/auth';
+
+interface User {
+  username: string;
+  email: string;
+  attributes: {
+    email: string;
+    sub: string;
+  };
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any;
+  user: User | null;
   signIn: (username: string, password: string) => Promise<any>;
   signOut: () => Promise<any>;
   signUp: (username: string, password: string, email: string) => Promise<any>;
@@ -17,40 +26,59 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    checkAuthState();
+    // Verificar el estado de autenticación al cargar
+    const checkAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+        
+        setUser({
+          username: currentUser.username,
+          email: attributes.email || currentUser.username,
+          attributes: attributes
+        });
+        setIsAuthenticated(true);
+      } catch (error) {
+        // Usuario no autenticado
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
 
-  async function checkAuthState() {
+  async function handleSignIn(username: string, password: string) {
     try {
-      const user = await Auth.currentAuthenticatedUser();
-      setUser(user);
-      setIsAuthenticated(true);
-    } catch (error) {
-      setUser(null);
-      setIsAuthenticated(false);
-    }
-    setLoading(false);
-  }
-
-  async function signIn(username: string, password: string) {
-    try {
-      const user = await Auth.signIn(username, password);
-      setUser(user);
-      setIsAuthenticated(true);
-      return user;
+      const { isSignedIn } = await signIn({ username, password });
+      
+      if (isSignedIn) {
+        const currentUser = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+        
+        setUser({
+          username: currentUser.username,
+          email: attributes.email || username,
+          attributes: attributes
+        });
+        setIsAuthenticated(true);
+        return currentUser;
+      }
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
     }
   }
 
-  async function signOut() {
+  async function handleSignOut() {
     try {
-      await Auth.signOut();
+      await signOut();
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
@@ -59,41 +87,45 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     }
   }
 
-  async function signUp(username: string, password: string, email: string) {
+  async function handleSignUp(username: string, password: string, email: string) {
     try {
-      const { user } = await Auth.signUp({
+      const { userId } = await signUp({
         username,
         password,
-        attributes: { email }
+        options: {
+          userAttributes: {
+            email
+          }
+        }
       });
-      return user;
+      return { username: userId };
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
     }
   }
 
-  async function confirmSignUp(username: string, code: string) {
+  async function handleConfirmSignUp(username: string, code: string) {
     try {
-      return await Auth.confirmSignUp(username, code);
+      return await confirmSignUp({ username, confirmationCode: code });
     } catch (error) {
       console.error('Error confirming sign up:', error);
       throw error;
     }
   }
 
-  async function forgotPassword(username: string) {
+  async function handleForgotPassword(username: string) {
     try {
-      return await Auth.forgotPassword(username);
+      return await resetPassword({ username });
     } catch (error) {
       console.error('Error in forgot password:', error);
       throw error;
     }
   }
 
-  async function forgotPasswordSubmit(username: string, code: string, newPassword: string) {
+  async function handleForgotPasswordSubmit(username: string, code: string, newPassword: string) {
     try {
-      return await Auth.forgotPasswordSubmit(username, code, newPassword);
+      return await confirmResetPassword({ username, confirmationCode: code, newPassword });
     } catch (error) {
       console.error('Error submitting new password:', error);
       throw error;
@@ -105,12 +137,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       value={{ 
         isAuthenticated, 
         user, 
-        signIn, 
-        signOut, 
-        signUp, 
-        confirmSignUp, 
-        forgotPassword, 
-        forgotPasswordSubmit, 
+        signIn: handleSignIn, 
+        signOut: handleSignOut, 
+        signUp: handleSignUp, 
+        confirmSignUp: handleConfirmSignUp, 
+        forgotPassword: handleForgotPassword, 
+        forgotPasswordSubmit: handleForgotPasswordSubmit, 
         loading 
       }}
     >

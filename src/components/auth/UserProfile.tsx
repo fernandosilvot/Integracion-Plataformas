@@ -1,10 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './MockAuthContext';
+import { useAuth } from './AuthContext';
+import { updateUserAttributes, fetchUserAttributes } from 'aws-amplify/auth';
 
 const UserProfile: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    birthdate: '',
+    plan: 'Premium'
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    loadUserData();
+  }, [user]);
+
+  const loadUserData = async () => {
+    if (isAuthenticated) {
+      try {
+        const attributes = await fetchUserAttributes();
+        const formattedBirthdate = attributes.birthdate
+          ? new Date(attributes.birthdate).toISOString().split('T')[0]
+          : '';
+          
+        setFormData({
+          name: attributes.name || 'Usuario Demo',
+          email: attributes.email || '',
+          birthdate: formattedBirthdate,
+          plan: 'Premium'
+        });
+      } catch (error) {
+        console.error('Error al cargar datos del usuario:', error);
+      }
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -15,90 +49,177 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando perfil...</p>
-        </div>
-      </div>
-    );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      console.log('Intentando actualizar atributos:', formData);
+      
+      // Preparamos los atributos a actualizar
+      const attributesToUpdate: Record<string, string> = {
+        name: formData.name,
+        birthdate: formData.birthdate
+      };
+      
+      // Eliminamos atributos vacíos
+      Object.keys(attributesToUpdate).forEach(key => {
+        if (!attributesToUpdate[key]) {
+          delete attributesToUpdate[key];
+        }
+      });
+      
+      console.log('Atributos a actualizar:', attributesToUpdate);
+
+      // Actualizamos los atributos del usuario en Cognito
+      await updateUserAttributes({
+        userAttributes: attributesToUpdate
+      });
+
+      // Recargamos los datos del usuario para mostrar los cambios
+      await loadUserData();
+
+      setMessage({ 
+        text: 'Perfil actualizado correctamente', 
+        type: 'success' 
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error al actualizar el perfil:', error);
+      setMessage({ 
+        text: `Error al actualizar el perfil: ${error instanceof Error ? error.message : 'Error desconocido'}`, 
+        type: 'error' 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isAuthenticated || !user) {
+    return <div className="text-center py-10">Cargando perfil...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Perfil de usuario</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">Información personal y configuración</p>
-            </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Perfil de Usuario</h1>
+      
+      {message.text && (
+        <div className={`p-4 mb-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {message.text}
+        </div>
+      )}
+
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Información de la Cuenta</h2>
+          {!isEditing ? (
             <button
-              onClick={() => navigate('/')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              Volver al editor
+              Editar Perfil
             </button>
-          </div>
-          <div className="border-t border-gray-200">
-            <dl>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Nombre de usuario</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.username}</dd>
-              </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Correo electrónico</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.email}</dd>
-              </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">ID de usuario</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.attributes.sub}</dd>
-              </div>
-            </dl>
-          </div>
+          ) : null}
         </div>
 
-        <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Configuración de la cuenta</h3>
-          </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Cambiar contraseña</h4>
-                <p className="mt-1 text-sm text-gray-500">
-                  Para cambiar tu contraseña, primero debes cerrar sesión y usar la opción "Olvidé mi contraseña" en la pantalla de inicio de sesión.
-                </p>
-              </div>
+        <p className="text-sm text-gray-600 mb-4">Detalles personales y de contacto.</p>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Eliminar cuenta</h4>
-                <p className="mt-1 text-sm text-gray-500">
-                  Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
-                </p>
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Eliminar cuenta
-                  </button>
-                </div>
-              </div>
+        {!isEditing ? (
+          <div className="space-y-4">
+            <div>
+              <p className="text-gray-600">Nombre completo</p>
+              <p className="font-medium">{formData.name}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Email</p>
+              <p className="font-medium">{formData.email}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Fecha de cumpleaños</p>
+              <p className="font-medium">{formData.birthdate || 'No especificada'}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Plan</p>
+              <p className="font-medium">{formData.plan}</p>
             </div>
           </div>
-        </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-gray-700 mb-1">Nombre completo</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100"
+              />
+              <p className="text-xs text-gray-500 mt-1">El email no se puede cambiar directamente</p>
+            </div>
+            <div>
+              <label htmlFor="birthdate" className="block text-gray-700 mb-1">Fecha de cumpleaños</label>
+              <input
+                id="birthdate"
+                name="birthdate"
+                type="date"
+                value={formData.birthdate}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Plan</label>
+              <input
+                type="text"
+                value={formData.plan}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100"
+              />
+            </div>
+            <div className="flex space-x-4 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400"
+              >
+                {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleSignOut}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Cerrar sesión
-          </button>
-        </div>
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <h2 className="text-xl font-semibold mb-4">Opciones de Cuenta</h2>
+        <button
+          onClick={handleSignOut}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Cerrar Sesión
+        </button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 
 const ClientInfo: React.FC = () => {
   const { user } = useAuth();

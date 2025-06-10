@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "integracionplataform",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authintegracionplataformce0c4de6",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

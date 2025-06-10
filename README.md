@@ -1,99 +1,47 @@
-# La PiriApp Customizer
+# Integracion-Plataformas-Deploy
 
-Una aplicación web para crear y personalizar sitios web de manera sencilla e intuitiva.
+Esta es una versión del proyecto Integracion-Plataformas configurada específicamente para usar AWS Cognito para autenticación.
 
-## Características
+## Configuración de AWS Cognito
 
-- Personalización completa de colores, diseño y contenido
-- Asistente de IA para ayudar en el diseño
-- Sistema de autenticación con AWS Cognito
-- Guardado de proyectos en la nube
-- Descarga de sitios web personalizados en formato ZIP
+La aplicación ya está configurada para usar AWS Cognito con los siguientes detalles:
 
-## Tecnologías utilizadas
+- **Region**: us-east-1
+- **User Pool ID**: us-east-1_BsrxeudsL
+- **App Client ID**: 7gl4t9niavlu0p9ekigqm8bb00
 
-- React con TypeScript
-- Vite como bundler
-- Tailwind CSS para estilos
-- AWS Amplify para autenticación y backend
-- Amazon Cognito para gestión de usuarios
-- DynamoDB para almacenamiento de proyectos
+La configuración se carga automáticamente desde el archivo `src/aws-exports.js` generado por Amplify CLI.
 
-## Configuración del proyecto
+## Ejecución del proyecto
 
-### Requisitos previos
+1. Instala las dependencias:
+   ```
+   npm install
+   ```
 
-- Node.js (v14 o superior)
-- npm o yarn
-- Cuenta de AWS
-- AWS CLI configurado
-- Amplify CLI instalado
+2. Inicia el servidor de desarrollo:
+   ```
+   npm run dev
+   ```
 
-### Instalación
+## Funcionalidades implementadas
 
-1. Clonar el repositorio:
-```bash
-git clone <url-del-repositorio>
-cd project
-```
-
-2. Instalar dependencias:
-```bash
-npm install
-```
-
-3. Inicializar Amplify:
-```bash
-amplify init
-```
-
-4. Añadir autenticación:
-```bash
-amplify add auth
-```
-
-5. Añadir almacenamiento:
-```bash
-amplify add storage
-```
-
-6. Añadir API:
-```bash
-amplify add api
-```
-
-7. Implementar recursos en AWS:
-```bash
-amplify push
-```
-
-8. Iniciar el servidor de desarrollo:
-```bash
-npm run dev
-```
+- Registro de usuarios con AWS Cognito
+- Inicio de sesión con AWS Cognito
+- Confirmación de registro por código (enviado por email)
+- Recuperación de contraseña
+- Rutas protegidas que requieren autenticación
+- Perfil de usuario
 
 ## Estructura del proyecto
 
-- `/src`: Código fuente de la aplicación
-  - `/components`: Componentes de React
-    - `/auth`: Componentes relacionados con la autenticación
-    - `/steps`: Pasos del asistente de personalización
-  - `/services`: Servicios para interactuar con APIs
-  - `/App.tsx`: Componente principal
-  - `/main.tsx`: Punto de entrada
+- `src/components/auth/`: Componentes relacionados con la autenticación
+- `src/aws-config.ts`: Configuración de AWS Amplify y Cognito
+- `src/aws-exports.js`: Archivo generado por Amplify con la configuración de AWS
 
-- `/amplify`: Configuración de AWS Amplify
-  - `/backend`: Recursos de backend
-    - `/auth`: Configuración de Cognito
-    - `/storage`: Configuración de DynamoDB
-    - `/api`: Configuración de API Gateway
-    - `/function`: Funciones Lambda
+## Notas importantes
 
-## Contacto
-
-Para cualquier duda o consulta, contacta al creador:
-Fernando Silva T (https://linktr.ee/fernandosilvot)
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT.
+- Los usuarios deben confirmar su registro mediante un código enviado por email
+- Las contraseñas deben tener al menos 8 caracteres
+- La autenticación se realiza mediante email (no username)
+- La verificación de usuarios se realiza por email

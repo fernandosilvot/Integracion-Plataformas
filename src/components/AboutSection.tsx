@@ -91,17 +91,32 @@ const AboutSection: React.FC = () => {
       {/* Team section */}
       <div className="mb-12">
         <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Nuestro Equipo</h3>
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">         
           <div className="text-center">
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                src="/assets/victoria.jpeg" 
+                alt="Victoria Roa" 
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <h4 className="text-lg font-medium text-gray-900">Victoria Roa</h4>
+            <p className="text-indigo-600">Fundador & CEO</p>
+            <p className="mt-2 text-gray-500">
+              Creando experiencias de usuario intuitivas y atractivas.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
+              <img 
+                src="/assets/fer.jpeg" 
                 alt="Fernando Silva T" 
                 className="h-full w-full object-cover"
               />
             </div>
             <h4 className="text-lg font-medium text-gray-900">Fernando Silva T</h4>
-            <p className="text-indigo-600">Fundador & CEO</p>
+            <p className="text-indigo-600">Desarrollador Senior</p>
             <p className="mt-2 text-gray-500">
               Apasionado por hacer que la tecnología sea accesible para todos.
             </p>
@@ -110,22 +125,7 @@ const AboutSection: React.FC = () => {
           <div className="text-center">
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
-                alt="Victoria Roa" 
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <h4 className="text-lg font-medium text-gray-900">Victoria Roa</h4>
-            <p className="text-indigo-600">Diseñadora UX/UI</p>
-            <p className="mt-2 text-gray-500">
-              Creando experiencias de usuario intuitivas y atractivas.
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
-              <img 
-                src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                src="/assets/edu.jpeg" 
                 alt="Eduardo Guzman" 
                 className="h-full w-full object-cover"
               />
@@ -140,7 +140,7 @@ const AboutSection: React.FC = () => {
           <div className="text-center">
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                src="/assets/carlos.jpeg"
                 alt="Carlos Peña" 
                 className="h-full w-full object-cover"
               />
@@ -155,13 +155,13 @@ const AboutSection: React.FC = () => {
           <div className="text-center">
             <div className="mx-auto h-40 w-40 rounded-full overflow-hidden mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" 
+                src="/assets/rodrigo.jpeg" 
                 alt="Rodrigo Mujica" 
                 className="h-full w-full object-cover"
               />
             </div>
             <h4 className="text-lg font-medium text-gray-900">Rodrigo Mujica</h4>
-            <p className="text-indigo-600">Desarrollador Full Stack</p>
+            <p className="text-indigo-600">Documentador</p>
             <p className="mt-2 text-gray-500">
               Construyendo la tecnología que impulsa nuestras herramientas.
             </p>

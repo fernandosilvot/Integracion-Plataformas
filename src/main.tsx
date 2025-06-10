@@ -3,8 +3,11 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 
-// Componentes de autenticación - Usamos la versión mock para desarrollo local
-import { AuthProvider, useAuth } from './components/auth/MockAuthContext';
+// Importamos AWS Amplify y la configuración
+import './aws-config';
+
+// Componentes de autenticación - Usamos la versión real con AWS Cognito
+import { AuthProvider, useAuth } from './components/auth/AuthContext';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ConfirmSignUp from './components/auth/ConfirmSignUp';

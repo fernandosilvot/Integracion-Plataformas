@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 import { getUserProjects, Project } from '../services/MockProjectService';
 import { PieChart, BarChart, Calendar, Clock, Settings, Shield, Bell, Key, User } from 'lucide-react';
+import { updateUserAttributes, fetchUserAttributes } from 'aws-amplify/auth';
 
 const UserSection: React.FC = () => {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // NUEVAS VARIABLES DE ESTADO PARA LA CUENTA
+  const [isEditing, setIsEditing] = useState(false);
+  const [accountData, setAccountData] = useState({
+    name: '',
+    email: '',
+    birthdate: ''
+  });
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -22,9 +32,57 @@ const UserSection: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchProjects();
   }, [user]);
+
+  // Cargar datos de la cuenta desde usuario
+  useEffect(() => {
+    if (user) {
+      setAccountData({
+        name: user.attributes.name || 'Usuario Demo',
+        email: user.attributes.email || '',
+        birthdate: user.attributes.birthdate
+          ? new Date(user.attributes.birthdate).toISOString().split('T')[0]
+          : ''
+      });
+    }
+  }, [user]);
+
+  const handleAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAccountData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAccountSave = async () => {
+    setUpdating(true);
+    try {
+      const attributesToUpdate: Record<string, string> = {
+        name: accountData.name,
+        birthdate: accountData.birthdate
+      };
+      // Actualiza solo atributos con valor
+      Object.keys(attributesToUpdate).forEach(key => {
+        if (!attributesToUpdate[key]) {
+          delete attributesToUpdate[key];
+        }
+      });
+      await updateUserAttributes({ userAttributes: attributesToUpdate });
+      // Opcional: recargar datos
+      const refreshedAttrs = await fetchUserAttributes();
+      setAccountData({
+        name: refreshedAttrs.name || 'Usuario Demo',
+        email: refreshedAttrs.email || '',
+        birthdate: refreshedAttrs.birthdate
+          ? new Date(refreshedAttrs.birthdate).toISOString().split('T')[0]
+          : ''
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error al actualizar la cuenta:', error);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   // Función para obtener la fecha de registro (simulada)
   const getRegistrationDate = () => {
@@ -158,61 +216,119 @@ const UserSection: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <div className="px-4 py-5 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Información de la Cuenta</h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">Detalles personales y de contacto.</p>
+              <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">Información de la Cuenta</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-gray-500">Detalles personales y de contacto.</p>
+                </div>
+                {!isEditing && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Editar
+                  </button>
+                )}
               </div>
               <div className="border-t border-gray-200">
-                <dl>
-                  <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Nombre completo</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">Usuario Demo</dd>
-                  </div>
-                  <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Email</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user?.email}</dd>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Fecha de registro</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{getRegistrationDate()}</dd>
-                  </div>
-                  <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Plan</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Premium
-                      </span>
-                    </dd>
-                  </div>
-                </dl>
+                {isEditing ? (
+                  <form className="px-4 py-5 sm:p-6" onSubmit={(e) => { e.preventDefault(); handleAccountSave(); }}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-500">Nombre completo</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={accountData.name}
+                        onChange={handleAccountChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-500">Email</label>
+                      <input
+                        type="email"
+                        value={accountData.email}
+                        disabled
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">El email no se puede cambiar directamente</p>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-500">Fecha de cumpleaños</label>
+                      <input
+                        type="date"
+                        name="birthdate"
+                        value={accountData.birthdate}
+                        onChange={handleAccountChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                      />
+                    </div>
+                    <div className="flex space-x-4 pt-4">
+                      <button
+                        type="submit"
+                        disabled={updating}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400"
+                      >
+                        {updating ? 'Guardando...' : 'Guardar Cambios'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <dl className="px-4 py-5 sm:px-6">
+                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">Nombre completo</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{accountData.name}</dd>
+                    </div>
+                    <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">Email</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{accountData.email}</dd>
+                    </div>
+                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">Fecha de cumpleaños</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{accountData.birthdate || 'No especificada'}</dd>
+                    </div>
+                    <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">Plan</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          Premium
+                        </span>
+                      </dd>
+                    </div>
+                  </dl>
+                )}
               </div>
             </div>
-
-            <div className="bg-white shadow sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Cambiar contraseña</h3>
-                <div className="mt-2 max-w-xl text-sm text-gray-500">
-                  <p>Actualiza tu contraseña para mantener tu cuenta segura.</p>
-                </div>
-                <form className="mt-5 sm:flex sm:items-center">
-                  <div className="w-full sm:max-w-xs">
-                    <label htmlFor="password" className="sr-only">Contraseña</label>
-                    <input
-                      type="password"
-                      name="password"
-                      id="password"
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                      placeholder="Nueva contraseña"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Cambiar
-                  </button>
-                </form>
+            <div className="bg-white shadow sm:rounded-lg p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Cambiar contraseña</h3>
+              <div className="mt-2 max-w-xl text-sm text-gray-500">
+                <p>Actualiza tu contraseña para mantener tu cuenta segura.</p>
               </div>
+              <form className="mt-5 sm:flex sm:items-center">
+                <div className="w-full sm:max-w-xs">
+                  <label htmlFor="password" className="sr-only">Contraseña</label>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Nueva contraseña"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cambiar
+                </button>
+              </form>
             </div>
           </div>
         );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 import ProjectList from './ProjectList';
 import { User, LogOut, Home, Grid, Info, Settings, Menu, X } from 'lucide-react';
 import AboutSection from './AboutSection';

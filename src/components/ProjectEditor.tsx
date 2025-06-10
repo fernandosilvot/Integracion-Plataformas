@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Settings, Palette, Layout, Users, FileCode, ChevronRight, Eye, FileEdit, Download, ArrowLeft, Save } from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 import { getProject, createProject, updateProject, Project } from '../services/MockProjectService';
 import Preview from './Preview';
 import ColorSchemeStep from './steps/ColorSchemeStep';

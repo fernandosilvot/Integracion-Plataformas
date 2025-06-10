@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 
 const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();

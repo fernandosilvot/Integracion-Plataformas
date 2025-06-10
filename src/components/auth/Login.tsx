@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from './MockAuthContext';
+import { useAuth } from './AuthContext';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -118,16 +118,6 @@ const Login: React.FC = () => {
             </button>
           </div>
         </form>
-        
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Para desarrollo local, puedes usar:
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Email: demo@example.com<br />
-            Contraseña: Password123
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -26,10 +26,11 @@ export interface UpdateProjectInput {
 }
 
 // Crear un nuevo proyecto
-export const createProject = async (project: CreateProjectInput): Promise<Project> => {
+export const createProject = async (userId: string, project: CreateProjectInput): Promise<Project> => {
   try {
     const newProject = {
       id: uuidv4(),
+      userId, // vincula el proyecto con el usuario
       ...project,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -75,11 +76,12 @@ export const getProject = async (projectId: string): Promise<Project> => {
   }
 };
 
-// Actualizar un proyecto existente
-export const updateProject = async (project: UpdateProjectInput): Promise<Project> => {
+// Actualizar un proyecto existente, pasando además el identificador del usuario
+export const updateProject = async (userId: string, project: UpdateProjectInput): Promise<Project> => {
   try {
     const updatedProject = {
       ...project,
+      userId, // incluir el id del usuario para validar propiedad/seguridad
       updatedAt: new Date().toISOString()
     };
     
@@ -94,26 +96,26 @@ export const updateProject = async (project: UpdateProjectInput): Promise<Projec
   }
 };
 
-// Eliminar un proyecto
-export const deleteProject = async (projectId: string): Promise<void> => {
+// Eliminar un proyecto, enviando el identificador del usuario
+export const deleteProject = async (userId: string, projectId: string): Promise<void> => {
   try {
-    await API.del('projectsApi', `/projects/${projectId}`, {});
+    await API.del('projectsApi', `/projects/${projectId}`, {
+      body: { userId } // se envía para validación en el backend si es necesario
+    });
   } catch (error) {
     console.error('Error deleting project:', error);
     throw error;
   }
 };
 
-// Guardar automáticamente un proyecto (para usar con autosave)
-export const autoSaveProject = async (project: UpdateProjectInput): Promise<Project> => {
+// Guardar automáticamente un proyecto (para usar con autosave),
+// ahora recibiendo el identificador del usuario
+export const autoSaveProject = async (userId: string, project: UpdateProjectInput): Promise<Project> => {
   try {
-    // Si el proyecto ya tiene un ID, actualizarlo
     if (project.id) {
-      return await updateProject(project);
-    } 
-    // Si no tiene ID, crear uno nuevo
-    else {
-      return await createProject(project as CreateProjectInput);
+      return await updateProject(userId, project);
+    } else {
+      return await createProject(userId, project as CreateProjectInput);
     }
   } catch (error) {
     console.error('Error auto-saving project:', error);

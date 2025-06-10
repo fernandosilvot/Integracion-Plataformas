@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from './MockAuthContext';
+import { useAuth } from './AuthContext';
 
 const ConfirmSignUp: React.FC = () => {
   const location = useLocation();

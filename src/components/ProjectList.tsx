@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Eye, Trash2, Download, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { useAuth } from './auth/MockAuthContext';
+import { useAuth } from './auth/AuthContext';
 import { getUserProjects, deleteProject, Project, createSampleProjects } from '../services/MockProjectService';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
